@@ -11,6 +11,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const cinemaId = event.pathParameters?.cinemaId;
   const movieId =
     event.pathParameters?.movieId || event.queryStringParameters?.movieId;
+  const period = event.queryStringParameters?.period;
   if (!cinemaId) {
     return {
       statusCode: 400,
@@ -26,6 +27,25 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
           ExpressionAttributeValues: {
             ":cinemaId": Number(cinemaId),
             ":movieId": movieId,
+          },
+        })
+      );
+      return {
+        statusCode: 200,
+        body: JSON.stringify(result.Items),
+      };
+    } else if (period) {
+      const result = await client.send(
+        new QueryCommand({
+          TableName: tableName,
+          KeyConditionExpression: "cinemaId = :cinemaId",
+          FilterExpression: "#period = :period",
+          ExpressionAttributeNames: {
+            "#period": "period",
+          },
+          ExpressionAttributeValues: {
+            ":cinemaId": Number(cinemaId),
+            ":period": period,
           },
         })
       );
